@@ -43,24 +43,29 @@ def get_conversational_chain():
     chain = load_qa_chain(model, chain_type="stuff", prompt=prompt)
     return chain
 
-def user_input(user_question):
+def user_input(user_question, qa_file):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
     chain = get_conversational_chain()
     response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-    st.write("Reply: ", response["output_text"])
+    with open(qa_file, 'a') as file:
+        file.write(f"Question: {user_question}\n")
+        file.write(f"Answer: {response['output_text']}\n\n")
+    return response["output_text"]
 
 def main():
     st.set_page_config(page_title="Chat PDF by Charan", page_icon=":book:")
-    st.markdown("Copyright © Rama Charan 2024")
     st.title("Chat with PDF using Gemini Langchain Integration")
     st.write("You can now ask questions about your PDF files!")
 
     user_question = st.text_input("Ask a Question from the PDF Files")
 
+    qa_file = "question_answers.txt"  # File to store question-answer pairs
+
     if user_question:
-        user_input(user_question)
+        response = user_input(user_question, qa_file)
+        st.write("Reply: ", response)
 
     st.sidebar.title("Menu")
     pdf_docs = st.sidebar.file_uploader("Upload PDF Files", accept_multiple_files=True)
@@ -72,7 +77,25 @@ def main():
                 get_vector_store(text_chunks)
                 st.success("Processing complete!")
     
+    # Display question-answer history
+    st.title("Question-Answer History:")
+    with open(qa_file, 'r') as file:
+        qa_history = file.readlines()
+        for item in qa_history:
+            st.write(item.strip())
+        st.write("---")
     
+    # Button to clear question-answer file
+    if st.sidebar.button("Clear Question-Answer History"):
+        with open(qa_file, 'w') as file:
+            file.write("")
+        st.success("Question-Answer History cleared!")
+
+    # Button to download question-answer file
+    if st.sidebar.button("Download Question-Answer History"):
+        with open(qa_file, 'r') as file:
+            data = file.read()
+        st.download_button(label="Download", data=data, file_name="question_answers.txt", mime="text/plain")
 
 if __name__ == "__main__":
     main()
