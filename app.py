@@ -79,16 +79,18 @@ def main():
     
     # Display question-answer history
     st.title("Question-Answer History:")
+    qa_history = st.empty()  # Placeholder to hold the question-answer history
     with open(qa_file, 'r') as file:
-        qa_history = file.readlines()
-        for item in qa_history:
-            st.write(item.strip())
-        st.write("---")
+        qa_data = file.readlines()
+        qa_history_data = set(qa_data)  # Filter out duplicates
+        qa_history_text = "".join(qa_history_data)
+        qa_history.markdown(qa_history_text)  # Display question-answer history
     
-    # Button to clear question-answer file
+    # Button to clear question-answer file and history
     if st.sidebar.button("Clear Question-Answer History"):
         with open(qa_file, 'w') as file:
             file.write("")
+        qa_history.markdown("")  # Clear the displayed question-answer history
         st.success("Question-Answer History cleared!")
 
     # Button to download question-answer file
