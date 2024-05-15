@@ -53,6 +53,7 @@ def user_input(user_question):
 
 def main():
     st.set_page_config(page_title="Chat PDF by Charan", page_icon=":book:")
+    st.markdown("Copyright © Rama Charan 2024")
     st.title("Chat with PDF using Gemini Langchain Integration")
     st.write("You can now ask questions about your PDF files!")
 
@@ -71,7 +72,7 @@ def main():
                 get_vector_store(text_chunks)
                 st.success("Processing complete!")
     
-    st.markdown("Copyright © Rama Charan 2024")
+    
 
 if __name__ == "__main__":
     main()
