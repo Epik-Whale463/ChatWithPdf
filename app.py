@@ -80,11 +80,24 @@ def main():
     # Display question-answer history
     st.title("Question-Answer History:")
     qa_history = st.empty()  # Placeholder to hold the question-answer history
+
     with open(qa_file, 'r') as file:
         qa_data = file.readlines()
-        qa_history_data = set(qa_data)  # Filter out duplicates
-        qa_history_text = "".join(qa_history_data)
-        qa_history.markdown(qa_history_text)  # Display question-answer history
+        qa_history_text = ""
+        for i in range(0, len(qa_data), 2):
+            # Check if there are enough elements in qa_data
+            if i + 1 < len(qa_data):
+                question = qa_data[i].strip()
+                answer = qa_data[i+1].strip()
+                qa_history_text += f"Question: {question}\n\nAnswer: {answer}\n\n"
+            else:
+                # If there's no corresponding answer, display the question only
+                question = qa_data[i].strip()
+                qa_history_text += f"Question: {question}\n\n"
+        
+    qa_history.markdown(qa_history_text)  # Display question-answer history
+
+
     
     # Button to clear question-answer file and history
     if st.sidebar.button("Clear Question-Answer History"):
