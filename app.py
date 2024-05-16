@@ -80,7 +80,7 @@ def main():
     # Display question-answer history
     st.title("Question-Answer History:")
     qa_history = st.empty()  # Placeholder to hold the question-answer history
-
+    
     with open(qa_file, 'r') as file:
         qa_data = file.readlines()
         qa_history_text = ""
@@ -89,13 +89,14 @@ def main():
             if i + 1 < len(qa_data):
                 question = qa_data[i].strip()
                 answer = qa_data[i+1].strip()
-                qa_history_text += f"Question: {question}\n\nAnswer: {answer}\n\n"
+                qa_history_text += f"Question:\n{question}\n\nAnswer:\n{answer}\n\n"
             else:
                 # If there's no corresponding answer, display the question only
                 question = qa_data[i].strip()
-                qa_history_text += f"Question: {question}\n\n"
+                qa_history_text += f"Question:\n{question}\n\n"
         
     qa_history.markdown(qa_history_text)  # Display question-answer history
+
 
 
     
