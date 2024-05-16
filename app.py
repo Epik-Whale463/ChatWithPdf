@@ -89,7 +89,7 @@ def main():
             if i + 1 < len(qa_data):
                 question = qa_data[i].strip()
                 answer = qa_data[i+1].strip()
-                qa_history_text += f"{question}\n\n{answer}"
+                qa_history_text += f"{question}\n{answer}\n\n"
         
     qa_history.markdown(qa_history_text)  # Display question-answer history
 
