@@ -93,7 +93,7 @@ def main():
             else:
                 # If there's no corresponding answer, display the question only
                 question = qa_data[i].strip()
-                qa_history_text += f"Question:\n{question}\n\n"
+                qa_history_text += f"\n"
         
     qa_history.markdown(qa_history_text)  # Display question-answer history
 
