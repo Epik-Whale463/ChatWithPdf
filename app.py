@@ -8,9 +8,15 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
+from pymongo import MongoClient
 
 load_dotenv()
 os.getenv("GOOGLE_API_KEY")
+
+# Connect to MongoDB
+client = MongoClient("mongodb+srv://pvrcharan2022:root@main.7hpxp9m.mongodb.net/?retryWrites=true&w=majority&appName=Main")
+db = client["MainDb"]
+collection = db["History"]
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -49,19 +55,25 @@ def user_input(user_question, qa_file):
     docs = new_db.similarity_search(user_question)
     chain = get_conversational_chain()
     response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
+    
+    # Store question-answer pair in MongoDB
+    collection.insert_one({"question": user_question, "answer": response['output_text']})
+    
+    # Write to local file (optional)
     with open(qa_file, 'a') as file:
         file.write(f"Question: {user_question}\n")
         file.write(f"Answer: {response['output_text']}\n\n")
+    
     return response["output_text"]
 
 def main():
     st.set_page_config(page_title="Chat PDF by Charan", page_icon=":book:")
     st.title("Chat with PDF using Gemini Langchain Integration")
-    st.write("You can now ask questions about your PDF files!")
+    st.write("You can now upload any PDFs (multiple PDFs at once too!) and basically chat with your PDF!")
 
     user_question = st.text_input("Ask a Question from the PDF Files")
 
-    qa_file = "question_answers.txt"  # File to store question-answer pairs
+    qa_file = "question_answers.txt"  # File to store question-answer pairs (optional)
 
     if user_question:
         response = user_input(user_question, qa_file)
@@ -77,38 +89,26 @@ def main():
                 get_vector_store(text_chunks)
                 st.success("Processing complete!")
     
-    # Display question-answer history
-    st.title("Question-Answer History:")
-    qa_history = st.empty()  # Placeholder to hold the question-answer history
-    
-    with open(qa_file, 'r') as file:
-        qa_data = file.readlines()
-        qa_history_text = ""
-        for i in range(0, len(qa_data), 2):
-            # Check if there are enough elements in qa_data
-            if i + 1 < len(qa_data):
-                question = qa_data[i].strip()
-                answer = qa_data[i+1].strip()
-                qa_history_text += f"{question}\n{answer}\n\n"
-        
-    qa_history.markdown(qa_history_text)  # Display question-answer history
+    # Display question-answer history from MongoDB
+    # st.title("Question-Answer History:")
+    # qa_history_text = ""  # Variable to hold the question-answer history
 
+    # for item in collection.find():
+    #     qa_history_text += f"Question: {item['question']}\n\nAnswer: {item['answer']}\n\n"
 
-
+    # st.write(qa_history_text)  # Display all question-answer pairs at once
 
     
     # Button to clear question-answer file and history
-    if st.sidebar.button("Clear Question-Answer History"):
-        with open(qa_file, 'w') as file:
-            file.write("")
-        qa_history.markdown("")  # Clear the displayed question-answer history
-        st.success("Question-Answer History cleared!")
+    # if st.sidebar.button("Clear Question-Answer History"):
+    #     collection.delete_many({})  # Clear MongoDB collection
+    #     st.success("Question-Answer History cleared!")
 
-    # Button to download question-answer file
-    if st.sidebar.button("Download Question-Answer History"):
-        with open(qa_file, 'r') as file:
-            data = file.read()
-        st.download_button(label="Download", data=data, file_name="question_answers.txt", mime="text/plain")
+    # Button to download question-answer file (optional)
+    # if st.sidebar.button("Download Question-Answer History"):
+    #     with open(qa_file, 'r') as file:
+    #         data = file.read()
+    #     st.download_button(label="Download", data=data, file_name="question_answers.txt", mime="text/plain")
 
 if __name__ == "__main__":
     main()
