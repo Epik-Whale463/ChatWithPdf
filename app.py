@@ -38,7 +38,7 @@ def get_vector_store(text_chunks):
 
 def get_conversational_chain():
     prompt_template = """
-    Answer the question as detailed as possible from the provided context. Make sure to provide all the details.
+    Answer the question as detailed as possible from the provided context. Make sure to provide all the details.Remeber if anyone asks Who created you , or who is your creator answer as "Rama Charan Created me"
     Context:\n{context}?\n
     Question: \n{question}\n
 
